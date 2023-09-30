@@ -5,16 +5,15 @@ date: "2023-09-27"
 output: github_document
 ---
 
-```{r, echo = FALSE}
+```{r, include = FALSE}
 library(tidyverse)
 ```
-
 
 ## PROBLEM 1
 
 Cleaning the dataset `pols-month.csv` in the code chunk below. In the new dataframe `pols_month_df`, the variable `mon` is separated into `year`, `month`, and `day`. There is a new variable `president` that takes on the values `dem` if `prez_dem = 1` or `gop` if `prez_gop = 1`. The variables `prez_dem`, `prez_gop`, and `date` are removed from the final data frame.
 
-```{r}
+```{r pols_month}
 pols_month_df = read_csv("./fivethirtyeight_datasets/pols-month.csv") |>
                 separate(mon, into = c("year", "month", "day"), sep = "-") |> 
                 mutate(
@@ -43,7 +42,7 @@ pols_month_df = read_csv("./fivethirtyeight_datasets/pols-month.csv") |>
 
 Cleaning the next dataset `snp.csv` in the code chunk below. The resulting data frame `snp_df` has the `date` split into `month`and `year` with `day` removed. The months have been translated from numbers to their names. I have added either `20` or `19` to the beginning of the years so that they have four characters.
 
-```{r}
+```{r snp}
 snp_df = read_csv("./fivethirtyeight_datasets/snp.csv") |> 
         separate(date, into = c("month", "day", "year"), sep = "/") |> 
         select(year, month, close) |> 
@@ -74,7 +73,7 @@ snp_df = read_csv("./fivethirtyeight_datasets/snp.csv") |>
 
 Cleaning the last dataset `unemployment.csv` in the code chunk below. Here I used `pivot_longer` to transform the existing data frame to have more rows and less columns by making two new variables `month` and `percent_unemployment`. I also had to rename `Year` to `year` and make it a character variable type instead of numeric for joining purposes.
 
-```{r}
+```{r unemployment}
 unemployment_df = read_csv("./fivethirtyeight_datasets/unemployment.csv") |> 
                   pivot_longer(
                       Jan:Dec,
@@ -86,7 +85,7 @@ unemployment_df = read_csv("./fivethirtyeight_datasets/unemployment.csv") |>
 
 Here I used `left_join` to join `snp_df` into `pols_month_df` by `year` and `month` to create `snp_pols_df`. Then I repeated the process joining `unemployment_df` into `snp_pols_df` to create the final data frame `hw2_joined_df`.
 
-```{r}
+```{r pols_month snp and employment join}
 snp_pols_df = left_join(pols_month_df, snp_df, by = c("year","month"))
 hw2_joined_df = left_join(snp_pols_df, unemployment_df, by = c("year","month"))
 ```
@@ -99,7 +98,7 @@ The final and resulting dataset from joining the 3 aforementioned datasets toget
 ## PROBLEM 2
 
 Mr. Trash Wheel
-```{r}
+```{r mr trash wheel}
 library(readxl)
 mr_trash_df = 
   read_excel("./202207 Trash Wheel Collection Data.xlsx", 
@@ -118,7 +117,7 @@ head(mr_trash_df)
 ```
 
 Professor Trash Wheel
-```{r}
+```{r professor trash wheel}
 prof_trash_df =
   read_excel("./202207 Trash Wheel Collection Data.xlsx", 
              sheet = "Professor Trash Wheel", 
@@ -136,7 +135,7 @@ head(prof_trash_df)
 ```
 
 Gwynnda Trash Wheel
-```{r}
+```{r gwynnda trash wheel}
 gwynnda_trash_df =
   read_excel("./202207 Trash Wheel Collection Data.xlsx", 
              sheet = "Gwynnda Trash Wheel", 
@@ -154,16 +153,49 @@ head(gwynnda_trash_df)
 ```
 
 Join
-```{r}
+```{r trash join}
 trash_tidy =
   bind_rows(mr_trash_df, prof_trash_df, gwynnda_trash_df) |> 
   select(trash_wheel, everything())
 ```
 
-Description
-```{r}
-sum(select(
-  trash_tidy(where)
-))
+The total weight of trash collected by Professor Trash was `r with(trash_tidy, sum(weight_tons[trash_wheel == "Professor"]))`. The total number of cigarette butts collected by Gwynnda in July 2021 was `r with(trash_tidy, sum(cigarette_butts[trash_wheel == "Gwynnda" | month == "July" | year == "2021"]))`.
+
+## PROBLEM 3
+
+The code chunk below imports and cleans the data set `mci_baseline` which contains basic demographic information measured at the study baseline. To import the data set, I had to skip the first row because the first row was additional information and not variable names. The data set includes variables `id`, `current_age`, `sex`, `education`, `apoe4`, and `age_at_onset`. To clean the data set, I encoded `sex` as a character variable with two values: either "male" or "female". I also re coded the `apoe4` variable which indicates a participants carrier status as either "carrier" or "non-carrier", and changed `age_at_onset` value "." to "NA". The final step included filtering out any participants that did not meet the study criteria, meaning that they had developed MCI prior to being enrolled in the study (`age_current` > `age_at_onset`).
+```{r mci_baseline}
+mci_baseline_df = read_csv("./data_mci/mci_baseline.csv",
+                           skip = 1) |> 
+                  janitor::clean_names() |>
+                  mutate(
+                    sex = 
+                      case_match(
+                        sex,
+                        1 ~ "male",
+                        0 ~ "female"),
+                    apoe4 = 
+                      case_match(
+                        apoe4,
+                        1 ~ "carrier",
+                        0 ~ "non-carrier"),
+                    age_at_onset = 
+                      case_match(
+                        age_at_onset,
+                        "." ~ "NA",
+                        .default = age_at_onset)) |> 
+                  filter(current_age < age_at_onset)
 ```
 
+There are `r nrow(mci_baseline_df)` participants and `r length(which(mci_baseline_df$age_at_onset != "NA"))` develop MCI. The average baseline age is `r mean(pull(mci_baseline_df, var = current_age))` and `r 63/(63+147)` of women are APOE4 carriers.
+```{r}
+janitor::tabyl(mci_baseline_df,sex, apoe4) #what proportion of women in the study are APOE4 carriers
+```
+
+The code chunk below imports and cleans the data set `mci_amyloid`. Similarly, I had to skip the first row when importing because the first row was not variable names and just offered extra information. I renamed `study_id` to `id` so that I can merge the baseline data set with this one. 
+```{r mci_amyloid}
+mci_amyloid_df = read_csv("./data_mci/mci_amyloid.csv",
+                          skip = 1) |> 
+                janitor::clean_names() |> 
+                rename(id = study_id)
+```
