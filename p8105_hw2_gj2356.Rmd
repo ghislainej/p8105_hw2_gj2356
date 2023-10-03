@@ -101,7 +101,7 @@ Mr. Trash Wheel
 ```{r mr trash wheel}
 library(readxl)
 mr_trash_df = 
-  read_excel("./202207 Trash Wheel Collection Data.xlsx", 
+  read_excel("./202309 Trash Wheel Collection Data.xlsx", 
              sheet = "Mr. Trash Wheel", 
              range = "A2:N549", 
              col_names = TRUE) |> 
@@ -119,7 +119,7 @@ head(mr_trash_df)
 Professor Trash Wheel
 ```{r professor trash wheel}
 prof_trash_df =
-  read_excel("./202207 Trash Wheel Collection Data.xlsx", 
+  read_excel("./202309 Trash Wheel Collection Data.xlsx", 
              sheet = "Professor Trash Wheel", 
              range = "A2:M96", 
              col_names = TRUE) |> 
@@ -137,7 +137,7 @@ head(prof_trash_df)
 Gwynnda Trash Wheel
 ```{r gwynnda trash wheel}
 gwynnda_trash_df =
-  read_excel("./202207 Trash Wheel Collection Data.xlsx", 
+  read_excel("./202309 Trash Wheel Collection Data.xlsx", 
              sheet = "Gwynnda Trash Wheel", 
              range = "A2:K108", 
              col_names = TRUE) |> 
