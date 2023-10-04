@@ -13,7 +13,7 @@ library(tidyverse)
 
 Cleaning the dataset `pols-month.csv` in the code chunk below. In the new dataframe `pols_month_df`, the variable `mon` is separated into `year`, `month`, and `day`. There is a new variable `president` that takes on the values `dem` if `prez_dem = 1` or `gop` if `prez_gop = 1`. The variables `prez_dem`, `prez_gop`, and `date` are removed from the final data frame.
 
-```{r pols_month}
+```{r pols_month, results = FALSE}
 pols_month_df = read_csv("./fivethirtyeight_datasets/pols-month.csv") |>
                 separate(mon, into = c("year", "month", "day"), sep = "-") |> 
                 mutate(
@@ -42,7 +42,7 @@ pols_month_df = read_csv("./fivethirtyeight_datasets/pols-month.csv") |>
 
 Cleaning the next dataset `snp.csv` in the code chunk below. The resulting data frame `snp_df` has the `date` split into `month`and `year` with `day` removed. The months have been translated from numbers to their names. I have added either `20` or `19` to the beginning of the years so that they have four characters.
 
-```{r snp}
+```{r snp, results = FALSE}
 snp_df = read_csv("./fivethirtyeight_datasets/snp.csv") |> 
         separate(date, into = c("month", "day", "year"), sep = "/") |> 
         select(year, month, close) |> 
@@ -73,7 +73,7 @@ snp_df = read_csv("./fivethirtyeight_datasets/snp.csv") |>
 
 Cleaning the last dataset `unemployment.csv` in the code chunk below. Here I used `pivot_longer` to transform the existing data frame to have more rows and less columns by making two new variables `month` and `percent_unemployment`. I also had to rename `Year` to `year` and make it a character variable type instead of numeric for joining purposes.
 
-```{r unemployment}
+```{r unemployment, results = FALSE}
 unemployment_df = read_csv("./fivethirtyeight_datasets/unemployment.csv") |> 
                   pivot_longer(
                       Jan:Dec,
@@ -85,12 +85,12 @@ unemployment_df = read_csv("./fivethirtyeight_datasets/unemployment.csv") |>
 
 Here I used `left_join` to join `snp_df` into `pols_month_df` by `year` and `month` to create `snp_pols_df`. Then I repeated the process joining `unemployment_df` into `snp_pols_df` to create the final data frame `hw2_joined_df`.
 
-```{r pols_month snp and employment join}
+```{r pols_month snp and employment join, results = FALSE}
 snp_pols_df = left_join(pols_month_df, snp_df, by = c("year","month"))
 hw2_joined_df = left_join(snp_pols_df, unemployment_df, by = c("year","month"))
 ```
 
-The first dataset `pols_month_df` contained 822 observations and 9 variables that had information on US politicians and their political affiliations at different times, ranging from 1947 to 2015. The next dataset `snp_df` contained 787 observations and 2 variables that showed the Standard & Poor's stock market index (S&P) and the corresponding date with years ranging from 1950 to 2015. The last dataset `unemployment_df` contained 68 observations and 13 variables before it was transformed. There was information about the percentage of unemployment for each month and year, ranging from 1948 to 2015.
+The first dataset `pols_month_df` contained 822 observations and 9 variables that had information on US politicians and their political affiliations at different times, ranging from 1947 to 2015. The next dataset `snp_df` contained 787 observations and 2 variables that showed the Standard & Poor's stock market index (S&P) and the corresponding date with years ranging from 1950 to 2015. The last dataset `unemployment_df` contained 816 observations and 13 variables before it was transformed. There was information about the percentage of unemployment for each month and year, ranging from 1948 to 2015.
 
 The final and resulting dataset from joining the 3 aforementioned datasets together, `hw2_joined_df`, has 822 observations and 11 variables. The range of `year` is from 1947 to 2015. There is information on the political affiliation of the president (`president`) for any given year along with the number of national politicians that are either democratic or republican. There is also information on the S&P at the time (`close`) along with unemployment percentages (`percent_unemployment`).
 
@@ -98,7 +98,7 @@ The final and resulting dataset from joining the 3 aforementioned datasets toget
 ## PROBLEM 2
 
 Mr. Trash Wheel
-```{r mr trash wheel}
+```{r mr trash wheel, results = FALSE}
 library(readxl)
 mr_trash_df = 
   read_excel("./202309 Trash Wheel Collection Data.xlsx", 
@@ -117,7 +117,7 @@ head(mr_trash_df)
 ```
 
 Professor Trash Wheel
-```{r professor trash wheel}
+```{r professor trash wheel, results = FALSE}
 prof_trash_df =
   read_excel("./202309 Trash Wheel Collection Data.xlsx", 
              sheet = "Professor Trash Wheel", 
@@ -135,7 +135,7 @@ head(prof_trash_df)
 ```
 
 Gwynnda Trash Wheel
-```{r gwynnda trash wheel}
+```{r gwynnda trash wheel, results = FALSE}
 gwynnda_trash_df =
   read_excel("./202309 Trash Wheel Collection Data.xlsx", 
              sheet = "Gwynnda Trash Wheel", 
@@ -153,7 +153,7 @@ head(gwynnda_trash_df)
 ```
 
 Join
-```{r trash join}
+```{r trash join, results = FALSE}
 trash_tidy =
   bind_rows(mr_trash_df, prof_trash_df, gwynnda_trash_df) |> 
   select(trash_wheel, everything())
@@ -164,7 +164,7 @@ The total weight of trash collected by Professor Trash was `r with(trash_tidy, s
 ## PROBLEM 3
 
 The code chunk below imports and cleans the data set `mci_baseline` which contains basic demographic information measured at the study baseline. To import the data set, I had to skip the first row because the first row was additional information and not variable names. The data set includes variables `id`, `current_age`, `sex`, `education`, `apoe4`, and `age_at_onset`. To clean the data set, I encoded `sex` as a character variable with two values: either "male" or "female". I also re coded the `apoe4` variable which indicates a participants carrier status as either "carrier" or "non-carrier", and changed `age_at_onset` value "." to "NA". The final step included filtering out any participants that did not meet the study criteria, meaning that they had developed MCI prior to being enrolled in the study (`age_current` > `age_at_onset`).
-```{r mci_baseline}
+```{r mci_baseline, results = FALSE}
 mci_baseline_df = read_csv("./data_mci/mci_baseline.csv",
                            skip = 1) |> 
                   janitor::clean_names() |>
@@ -193,9 +193,28 @@ janitor::tabyl(mci_baseline_df,sex, apoe4) #what proportion of women in the stud
 ```
 
 The code chunk below imports and cleans the data set `mci_amyloid`. Similarly, I had to skip the first row when importing because the first row was not variable names and just offered extra information. I renamed `study_id` to `id` so that I can merge the baseline data set with this one. 
-```{r mci_amyloid}
+```{r mci_amyloid, results = FALSE}
 mci_amyloid_df = read_csv("./data_mci/mci_amyloid.csv",
                           skip = 1) |> 
                 janitor::clean_names() |> 
                 rename(id = study_id)
 ```
+
+The code chunk below creates two data frames that show participants that are in the `mci_baseline_df` but not in the `mci_amyloid_df` and vice versa. 
+```{r, results = FALSE}
+missing_from_mci_baseline = anti_join(mci_amyloid_df, mci_baseline_df, by = "id")
+missing_from_mci_baseline
+
+missing_from_mci_amyloid = anti_join(mci_baseline_df, mci_amyloid_df, by = "id")
+missing_from_mci_amyloid
+```
+
+There are 16 participants that are in the `mci_amyloid_df` that do not show up in the `mci_baseline_df`: participant 72, 234, 283, 380, 484, 485, 486, 487, 488, 489, 490, 491, 492, 493, 494, and 495.
+
+There are 8 participants that appear in the `mci_baseline_df` that do not show up in the `mci_amyloid_df`: participant 14, 49, 92, 179, 268, 304, 389, and 412. 
+
+The code chunk below joins the baseline and amyloid data sets with the resulting data set containing only participants that show up in both of the data sets.
+```{r, results = FALSE}
+mci_df = full_join(mci_baseline_df, mci_amyloid_df, by = "id")
+```
+
